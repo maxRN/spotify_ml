@@ -1,13 +1,3 @@
-module Config : sig
-  type t
-
-  val make : client_id:string -> client_secret:string -> t
-  val client_id : config:t -> string
-
-  val request_token : config:t -> string
-  (** Returns client_id:client_secret base64 encoded. *)
-end
-
 module User : sig
   type t
 
@@ -29,7 +19,7 @@ end
 module Client : sig
   type t
 
-  val make : config:Config.t -> t
+  val make : client_id:string -> client_secret:string -> t
   val make_empty : t
 
   val redirect_uri :

@@ -1,13 +1,3 @@
-module Config = struct
-  type t = { client_id : string; client_secret : string }
-
-  let make ~client_id ~client_secret = { client_id; client_secret }
-  let client_id ~config = config.client_id
-
-  let request_token ~config =
-    Base64.encode_exn (config.client_id ^ ":" ^ config.client_secret)
-end
-
 module User = struct
   type t = {
     access_token : string;
@@ -53,6 +43,26 @@ module User = struct
 end
 
 module Client = struct
+  module Config : sig
+    type t
+
+    val client_id : config:t -> string
+    val make : client_id:string -> client_secret:string -> t
+    val make_empty : t
+
+    val request_token : config:t -> string
+    (** Returns client_id:client_secret base64 encoded. *)
+  end = struct
+    type t = { client_id : string; client_secret : string }
+
+    let make ~client_id ~client_secret = { client_id; client_secret }
+    let make_empty = { client_id = ""; client_secret = "" }
+    let client_id ~config = config.client_id
+
+    let request_token ~config =
+      Base64.encode_exn (config.client_id ^ ":" ^ config.client_secret)
+  end
+
   type t = { config : Config.t }
 
   type server_auth_response = {
@@ -80,8 +90,11 @@ module Client = struct
 
   let auth_url = Uri.of_string "https://accounts.spotify.com/authorize"
   let token_url = Uri.of_string "https://accounts.spotify.com/api/token"
-  let make ~config = { config }
-  let make_empty = { config = { client_id = ""; client_secret = "" } }
+
+  let make ~client_id ~client_secret =
+    { config = Config.make ~client_id ~client_secret }
+
+  let make_empty = { config = Config.make_empty }
 
   let redirect_uri ~client ~scope ~redirect_uri ~state =
     Uri.add_query_params auth_url
