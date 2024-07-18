@@ -18,7 +18,6 @@
 (package
  (name spotify_ml)
  (synopsis "A short synopsis")
- (allow_empty)
  (description "A longer description")
  (depends
   ocaml
