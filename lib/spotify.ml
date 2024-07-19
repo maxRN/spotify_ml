@@ -75,19 +75,29 @@ module Client = struct
 
   type user_auth_response = {
     access_token : string;
-    token_type : string;
+    _token_type : string;
     scope : string;
     expires_in : int;
     refresh_token : string;
-    error : string option;
-    error_description : string option;
+    _error : string option;
+    _error_description : string option;
   }
-  [@@deriving serialize, deserialize]
+  [@@deriving deserialize]
+
+  type user_refresh_response = {
+    access_token : string;
+    _token_type : string;
+    scope : string;
+    expires_in : int;
+    _error : string option;
+    _error_description : string option;
+  }
+  [@@deriving deserialize]
 
   type auth_response =
     | User of user_auth_response
     | Server of server_auth_response
-  [@@deriving serialize, deserialize]
+  [@@deriving deserialize]
 
   let auth_url = Uri.of_string "https://accounts.spotify.com/authorize"
   let token_url = Uri.of_string "https://accounts.spotify.com/api/token"
@@ -122,15 +132,6 @@ module Client = struct
       body)
     else body |> Cohttp_lwt.Body.to_string >|= fun body -> body
 
-  let user_of_userAuthResponse ~resp =
-    Format.eprintf "making user of: %s\n" resp;
-    Serde_json.of_string deserialize_user_auth_response resp
-    |> Result.map (fun user ->
-           User.of_auth_response ~access_token:user.access_token
-             ~refresh_token:user.refresh_token ~scope:user.scope
-             ~expires_in:user.expires_in)
-    |> Lwt.return
-
   let login_as_user ~client ~auth_code ~uri =
     Format.eprintf "logging in as user...\n";
     let request_token = Config.request_token ~config:client.config in
@@ -149,7 +150,12 @@ module Client = struct
       Cohttp_lwt_unix.Client.post_form ~headers ~params token_url
       >>= print_response false
     in
-    user_of_userAuthResponse ~resp
+    Serde_json.of_string deserialize_user_auth_response resp
+    |> Result.map (fun (user : user_auth_response) ->
+           User.of_auth_response ~access_token:user.access_token
+             ~refresh_token:user.refresh_token ~scope:user.scope
+             ~expires_in:user.expires_in)
+    |> Lwt.return
 
   let get ~user ~url =
     let open Lwt in
@@ -163,7 +169,7 @@ module Client = struct
     in
     req
 
-  let refresh_user ~client ~user : (User.t, Serde.error) result Lwt.t =
+  let refresh_user ~client ~old_user =
     Printf.eprintf "user no longer valid. Refreshing token.\n";
     let request_token = Config.request_token ~config:client.config in
     let headers =
@@ -172,7 +178,7 @@ module Client = struct
     let params =
       [
         ("grant_type", [ "refresh_token" ]);
-        ("refresh_token", [ User.refresh_token ~user ]);
+        ("refresh_token", [ User.refresh_token ~user:old_user ]);
       ]
     in
     let open Lwt in
@@ -180,7 +186,12 @@ module Client = struct
       Cohttp_lwt_unix.Client.post_form ~headers ~params token_url
       >>= print_response true
     in
-    user_of_userAuthResponse ~resp
+    Serde_json.of_string deserialize_user_refresh_response resp
+    |> Result.map (fun user ->
+           User.of_auth_response ~access_token:user.access_token
+             ~refresh_token:old_user.refresh_token ~scope:user.scope
+             ~expires_in:user.expires_in)
+    |> Lwt.return
 end
 
 module Api = struct
@@ -313,7 +324,7 @@ module Api = struct
     Format.eprintf "getting user's top tracks...\n";
     let%lwt user =
       if User.is_valid ~user then Lwt.return (Ok user)
-      else Client.refresh_user ~client ~user
+      else Client.refresh_user ~client ~old_user:user
     in
     match user with
     | Error e ->

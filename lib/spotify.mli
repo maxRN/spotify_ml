@@ -32,7 +32,7 @@ module Client : sig
     (User.t, Serde.error) result Lwt.t
 
   val refresh_user :
-    client:t -> user:User.t -> (User.t, Serde.error) result Lwt.t
+    client:t -> old_user:User.t -> (User.t, Serde.error) result Lwt.t
 
   val get : user:User.t -> url:string -> string Lwt.t
 end
