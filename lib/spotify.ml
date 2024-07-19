@@ -75,22 +75,21 @@ module Client = struct
 
   type user_auth_response = {
     access_token : string;
-    _token_type : string;
+    token_type : string;
     scope : string;
     expires_in : int;
     refresh_token : string;
-    _error : string option;
-    _error_description : string option;
+    error : string option;
+    error_description : string option;
   }
   [@@deriving deserialize]
 
   type user_refresh_response = {
     access_token : string;
-    _token_type : string;
     scope : string;
     expires_in : int;
-    _error : string option;
-    _error_description : string option;
+    error : string option;
+    error_description : string option;
   }
   [@@deriving deserialize]
 
@@ -151,6 +150,13 @@ module Client = struct
       >>= print_response false
     in
     Serde_json.of_string deserialize_user_auth_response resp
+    |> Result.map (fun user ->
+           Printf.eprintf
+             "user auth response: token type: %s error: %s error_description: %s\n"
+             user.token_type
+             (Option.value ~default:"no error" user.error)
+             (Option.value ~default:"no error" user.error_description);
+           user)
     |> Result.map (fun (user : user_auth_response) ->
            User.of_auth_response ~access_token:user.access_token
              ~refresh_token:user.refresh_token ~scope:user.scope
@@ -187,6 +193,12 @@ module Client = struct
       >>= print_response true
     in
     Serde_json.of_string deserialize_user_refresh_response resp
+    |> Result.map (fun (user : user_refresh_response) ->
+           Printf.eprintf
+             "user_refresh_response: error: %s error_description: %s\n"
+             (Option.value ~default:"no error" user.error)
+             (Option.value ~default:"no error" user.error_description);
+           user)
     |> Result.map (fun user ->
            User.of_auth_response ~access_token:user.access_token
              ~refresh_token:old_user.refresh_token ~scope:user.scope
