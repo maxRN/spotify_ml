@@ -123,6 +123,7 @@ module Client = struct
     else body |> Cohttp_lwt.Body.to_string >|= fun body -> body
 
   let user_of_userAuthResponse ~resp =
+    Format.eprintf "making user of: %s\n" resp;
     Serde_json.of_string deserialize_user_auth_response resp
     |> Result.map (fun user ->
            User.of_auth_response ~access_token:user.access_token
