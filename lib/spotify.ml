@@ -28,7 +28,7 @@ module User = struct
 
   let of_string ~user =
     let user =
-      Format.eprintf "trying to ge a user\n";
+      Format.eprintf "trying to ge a user \n";
       Serde_json.of_string deserialize_t user
     in
     Format.eprintf "we got a user.. maybe?\n";
@@ -38,8 +38,9 @@ module User = struct
   let refresh_token ~user = user.refresh_token
 
   let is_valid ~user =
-    Format.eprintf "is valid?\n";
-    user.expires_at >= int_of_float (Unix.time ()) + 3000
+    let is_valid = user.expires_at >= int_of_float (Unix.time ()) + 3000 in
+    Format.eprintf "is valid? %b\n" is_valid;
+    is_valid
 end
 
 module Client = struct
@@ -121,6 +122,14 @@ module Client = struct
       body)
     else body |> Cohttp_lwt.Body.to_string >|= fun body -> body
 
+  let user_of_userAuthResponse ~resp =
+    Serde_json.of_string deserialize_user_auth_response resp
+    |> Result.map (fun user ->
+           User.of_auth_response ~access_token:user.access_token
+             ~refresh_token:user.refresh_token ~scope:user.scope
+             ~expires_in:user.expires_in)
+    |> Lwt.return
+
   let login_as_user ~client ~auth_code ~uri =
     Format.eprintf "logging in as user...\n";
     let request_token = Config.request_token ~config:client.config in
@@ -139,12 +148,7 @@ module Client = struct
       Cohttp_lwt_unix.Client.post_form ~headers ~params token_url
       >>= print_response false
     in
-    Lwt.return
-      (Serde_json.of_string deserialize_user_auth_response resp
-      |> Result.map (fun user ->
-             User.of_auth_response ~access_token:user.access_token
-               ~refresh_token:user.refresh_token ~scope:user.scope
-               ~expires_in:user.expires_in))
+    user_of_userAuthResponse ~resp
 
   let get ~user ~url =
     let open Lwt in
@@ -159,6 +163,7 @@ module Client = struct
     req
 
   let refresh_user ~client ~user : (User.t, Serde.error) result Lwt.t =
+    Printf.eprintf "user no longer valid. Refreshing token.\n";
     let request_token = Config.request_token ~config:client.config in
     let headers =
       Cohttp.Header.init () |> ph "Authorization" ("Basic " ^ request_token)
@@ -174,8 +179,7 @@ module Client = struct
       Cohttp_lwt_unix.Client.post_form ~headers ~params token_url
       >>= print_response false
     in
-    let user = User.of_string ~user:resp in
-    Lwt.return user
+    user_of_userAuthResponse ~resp
 end
 
 module Api = struct
