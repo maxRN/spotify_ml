@@ -177,7 +177,7 @@ module Client = struct
     let open Lwt in
     let%lwt resp =
       Cohttp_lwt_unix.Client.post_form ~headers ~params token_url
-      >>= print_response false
+      >>= print_response true
     in
     user_of_userAuthResponse ~resp
 end
