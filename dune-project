@@ -17,8 +17,8 @@
 
 (package
  (name spotify_ml)
- (synopsis "A short synopsis")
- (description "A longer description")
+ (synopsis "Spotify API bindings")
+ (description "Interact with the Spotify Web API via OCaml.")
  (depends
   ocaml
   dune
