@@ -13,8 +13,6 @@
 
 (license MIT)
 
-(documentation https://url/to/documentation)
-
 (package
  (name spotify_ml)
  (synopsis "Spotify API bindings")
