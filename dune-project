@@ -20,12 +20,13 @@
  (depends
   ocaml
   dune
-  (ocamlformat :dev)
-  serde
-  serde_derive
-  lwt_ppx
-  serde_json
-  cohttp-lwt-unix)
+  (ocamlformat (and :dev (= 0.26.2) ))
+  (serde (= 0.0.2))
+  (serde_derive (= 0.0.2))
+  (serde_json (= 0.0.2))
+  (lwt_ppx (= 2.1.0))
+  (cohttp-lwt-unix (= 5.3.0))
+  )
  (tags (spotify)))
 
 ; See the complete stanza docs at https://dune.readthedocs.io/en/stable/reference/dune-project/index.html
