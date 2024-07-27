@@ -1,0 +1,9 @@
+{0 Spotify_ml}
+
+This library provides OCaml bindings for accessing the Spotify Web API.
+
+{1 Usage}
+
+The {!Spotify_ml.Api} module provides all functions and types that match the Spotify Web API.
+To use it, you need to first create a {!Spotify_ml.Client} and optionally a {!Spotify_ml.Client.User}
+if you want to access user specific information such as a user's top tracks.
