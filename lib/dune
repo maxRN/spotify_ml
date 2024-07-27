@@ -4,6 +4,3 @@
  (libraries cohttp-lwt-unix serde_json serde)
  (preprocess
   (pps serde_derive lwt_ppx)))
-
-(documentation
-  (mld_files :standard))

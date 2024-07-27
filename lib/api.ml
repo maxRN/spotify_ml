@@ -99,42 +99,22 @@ type userTopArtistsResponse = {
 }
 [@@deriving deserialize]
 
-type httpError = { code : int; message : string }
-
-type requestError =
-  | Token of httpError
-  | OAuth of httpError
-  | RateLimit of httpError
+type apiError =
+  | ClientError of Client.requestError
+  | SerializationError of Serde.error
 
 let base_url = "https://api.spotify.com/v1"
 
-let get_tracks ~user ~url :
-    (userTopTracksResponse * Client.User.t, Serde.error) result Lwt.t =
+let deserialize x =
+  Serde_json.of_string deserialize_userTopTracksResponse x
+  |> Result.map_error (fun e -> SerializationError e)
+
+let get_tracks ~user ~url : (userTopTracksResponse, apiError) result Lwt.t =
   Format.eprintf "getting tracks for user: \n";
   let%lwt resp = Client.get ~user ~url in
-  let maybe_tracks =
-    Serde_json.of_string deserialize_userTopTracksResponse resp
-  in
-  Lwt.return
-    (match maybe_tracks with
-    | Ok tracks -> Ok (tracks, user)
-    | Error e ->
-        Format.eprintf "can't get user top tracks response: %s\n" resp;
-        Serde.pp_err Format.err_formatter e;
-        Error e)
+  let resp = resp |> Result.map_error (fun e -> ClientError e) in
+  Result.bind resp deserialize |> Lwt.return
 
-let user_top_tracks ~client ~user =
-  Format.eprintf "getting user's top tracks...\n";
-  let%lwt user =
-    if Client.User.is_valid ~user then Lwt.return (Ok user)
-    else Client.refresh_user ~client ~old_user:user
-  in
-  match user with
-  | Error e ->
-      Format.eprintf "Can't get user: n";
-      Serde.pp_err Format.err_formatter e;
-      Lwt.return (Error e)
-  | Ok user ->
-      let url = base_url ^ "/me/top/tracks" in
-      let tracks = get_tracks ~url ~user in
-      tracks
+let user_top_tracks ~user : (userTopTracksResponse, apiError) result Lwt.t =
+  let url = base_url ^ "/me/top/tracks" in
+  get_tracks ~user ~url

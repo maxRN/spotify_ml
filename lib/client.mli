@@ -13,6 +13,17 @@ module User : sig
 end
 
 type t
+type httpError = { code : int; message : string }
+
+type requestError =
+  | Token of httpError
+      (** Bad or expired token. This can happen if the user revoked a token or
+          the access token has expired. You should re-authenticate the user. *)
+  | OAuth of httpError
+      (** Bad OAuth request (wrong consumer key, bad nonce, expired timestamp...).
+        Unfortunately, re-authenticating the user won't help here. *)
+  | RateLimit of httpError  (** The app has exceeded its rate limits.*)
+  | Unknown of httpError  (** Unexpected error happened.*)
 
 val make : client_id:string -> client_secret:string -> t
 val make_empty : t
@@ -29,4 +40,4 @@ val login_as_user :
 val refresh_user :
   client:t -> old_user:User.t -> (User.t, Serde.error) result Lwt.t
 
-val get : user:User.t -> url:string -> string Lwt.t
+val get : user:User.t -> url:string -> (string, requestError) result Lwt.t

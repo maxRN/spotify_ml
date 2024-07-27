@@ -1,5 +1,3 @@
-(** Api bindings *)
-
 (** Api includes functions that map to the Spotify Web REST API.
     See {{:https://developer.spotify.com/documentation/web-api}here} for an up
     to date reference.
@@ -97,19 +95,11 @@ type userTopArtistsResponse = {
   items : artist list;
 }
 
-type httpError = { code : int; message : string }
-
-type requestError =
-  | Token of httpError
-      (** Bad or expired token. This can happen if the user revoked a token or
-          the access token has expired. You should re-authenticate the user. *)
-  | OAuth of httpError
-      (** Bad OAuth request (wrong consumer key, bad nonce, expired timestamp...).
-        Unfortunately, re-authenticating the user won't help here. *)
-  | RateLimit of httpError  (** The app has exceeded its rate limits.*)
+type apiError =
+  | ClientError of Client.requestError
+  | SerializationError of Serde.error
+      (** This happens when the response returned by Spotify doesn't match the declared types.*)
 
 val user_top_tracks :
-  client:Client.t ->
-  user:Client.User.t ->
-  (userTopTracksResponse * Client.User.t, Serde.error) result Lwt.t
+  user:Client.User.t -> (userTopTracksResponse, apiError) result Lwt.t
 (** Returns the users' top tracks.*)

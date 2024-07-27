@@ -64,6 +64,17 @@ end = struct
 end
 
 type t = { config : Config.t }
+type httpError = { code : int; message : string }
+
+type requestError =
+  | Token of httpError
+      (** Bad or expired token. This can happen if the user revoked a token or
+          the access token has expired. You should re-authenticate the user. *)
+  | OAuth of httpError
+      (** Bad OAuth request (wrong consumer key, bad nonce, expired timestamp...).
+        Unfortunately, re-authenticating the user won't help here. *)
+  | RateLimit of httpError  (** The app has exceeded its rate limits.*)
+  | Unknown of httpError  (** Unexpected error happened.*)
 
 type server_auth_response = {
   access_token : string;
@@ -116,6 +127,19 @@ let redirect_uri ~client ~scope ~redirect_uri ~state =
     ]
 
 let ph name value header = Cohttp.Header.add header name value
+let body_of_string body = body |> Cohttp_lwt.Body.to_string
+
+let error_from_response (resp, body) : (string, requestError) result Lwt.t =
+  let open Cohttp in
+  let code = resp |> Response.status |> Code.code_of_status in
+  let%lwt body = body_of_string body in
+  (match code with
+  | 200 -> Ok body
+  | 401 -> Error (Token { code; message = body })
+  | 403 -> Error (OAuth { code; message = body })
+  | 429 -> Error (RateLimit { code; message = body })
+  | _ -> Error (Unknown { code; message = body }))
+  |> Lwt.return
 
 let print_response print (resp, body) =
   let open Cohttp in
@@ -162,16 +186,12 @@ let login_as_user ~client ~auth_code ~uri =
   |> Lwt.return
 
 let get ~user ~url =
-  let open Lwt in
   let headers =
     Cohttp.Header.init ()
     |> ph "Authorization" ("Bearer " ^ User.access_token ~user)
   in
-  let req =
-    Cohttp_lwt_unix.Client.get ~headers (Uri.of_string url)
-    >>= print_response false
-  in
-  req
+  let%lwt req = Cohttp_lwt_unix.Client.get ~headers (Uri.of_string url) in
+  error_from_response req
 
 let refresh_user ~client ~old_user =
   let request_token = Config.request_token ~config:client.config in
