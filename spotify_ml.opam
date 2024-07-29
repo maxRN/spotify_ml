@@ -2,8 +2,8 @@
 opam-version: "2.0"
 synopsis: "Spotify API bindings"
 description: "Interact with the Spotify Web API via OCaml."
-maintainer: ["maxrn"]
-authors: ["maxrn"]
+maintainer: ["Max Große <max12.gro@gmail.com>"]
+authors: ["Max Große <max12.gro@gmail.com>"]
 license: "MIT"
 tags: ["spotify"]
 homepage: "https://github.com/maxrn/spotify_ml"

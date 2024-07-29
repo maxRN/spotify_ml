@@ -7,9 +7,9 @@
 (source
  (github maxrn/spotify_ml))
 
-(authors "maxrn")
+(authors "Max Große <max12.gro@gmail.com>")
 
-(maintainers "maxrn")
+(maintainers "Max Große <max12.gro@gmail.com>")
 
 (license MIT)
 
