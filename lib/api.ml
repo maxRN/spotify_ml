@@ -100,19 +100,19 @@ type userTopArtistsResponse = {
 [@@deriving deserialize]
 
 type apiError =
-  | ClientError of Client.requestError
-  | SerializationError of Serde.error
+  | ErrorClient of Client.requestError
+  | ErrorSerialization of Serde.error
 
 let base_url = "https://api.spotify.com/v1"
 
 let deserialize x =
   Serde_json.of_string deserialize_userTopTracksResponse x
-  |> Result.map_error (fun e -> SerializationError e)
+  |> Result.map_error (fun e -> ErrorSerialization e)
 
 let get_tracks ~user ~url : (userTopTracksResponse, apiError) result Lwt.t =
   Format.eprintf "getting tracks for user: \n";
   let%lwt resp = Client.get ~user ~url in
-  let resp = resp |> Result.map_error (fun e -> ClientError e) in
+  let resp = resp |> Result.map_error (fun e -> ErrorClient e) in
   Result.bind resp deserialize |> Lwt.return
 
 let user_top_tracks ~user : (userTopTracksResponse, apiError) result Lwt.t =

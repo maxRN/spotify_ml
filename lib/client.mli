@@ -16,14 +16,14 @@ type t
 type httpError = { code : int; message : string }
 
 type requestError =
-  | Token of httpError
+  | ErrorToken of httpError
       (** Bad or expired token. This can happen if the user revoked a token or
           the access token has expired. You should re-authenticate the user. *)
-  | OAuth of httpError
+  | ErrorOAuth of httpError
       (** Bad OAuth request (wrong consumer key, bad nonce, expired timestamp...).
         Unfortunately, re-authenticating the user won't help here. *)
-  | RateLimit of httpError  (** The app has exceeded its rate limits.*)
-  | Unknown of httpError  (** Unexpected error happened.*)
+  | ErrorRateLimit of httpError  (** The app has exceeded its rate limits.*)
+  | ErrorUnknown of httpError  (** Unexpected error happened.*)
 
 val make : client_id:string -> client_secret:string -> t
 val make_empty : t

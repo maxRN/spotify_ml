@@ -96,8 +96,8 @@ type userTopArtistsResponse = {
 }
 
 type apiError =
-  | ClientError of Client.requestError
-  | SerializationError of Serde.error
+  | ErrorClient of Client.requestError
+  | ErrorSerialization of Serde.error
       (** This happens when the response returned by Spotify doesn't match the declared types.*)
 
 val user_top_tracks :

@@ -67,14 +67,14 @@ type t = { config : Config.t }
 type httpError = { code : int; message : string }
 
 type requestError =
-  | Token of httpError
+  | ErrorToken of httpError
       (** Bad or expired token. This can happen if the user revoked a token or
           the access token has expired. You should re-authenticate the user. *)
-  | OAuth of httpError
+  | ErrorOAuth of httpError
       (** Bad OAuth request (wrong consumer key, bad nonce, expired timestamp...).
         Unfortunately, re-authenticating the user won't help here. *)
-  | RateLimit of httpError  (** The app has exceeded its rate limits.*)
-  | Unknown of httpError  (** Unexpected error happened.*)
+  | ErrorRateLimit of httpError  (** The app has exceeded its rate limits.*)
+  | ErrorUnknown of httpError  (** Unexpected error happened.*)
 
 type server_auth_response = {
   access_token : string;
@@ -135,10 +135,10 @@ let error_from_response (resp, body) : (string, requestError) result Lwt.t =
   let%lwt body = body_of_string body in
   (match code with
   | 200 -> Ok body
-  | 401 -> Error (Token { code; message = body })
-  | 403 -> Error (OAuth { code; message = body })
-  | 429 -> Error (RateLimit { code; message = body })
-  | _ -> Error (Unknown { code; message = body }))
+  | 401 -> Error (ErrorToken { code; message = body })
+  | 403 -> Error (ErrorOAuth { code; message = body })
+  | 429 -> Error (ErrorRateLimit { code; message = body })
+  | _ -> Error (ErrorUnknown { code; message = body }))
   |> Lwt.return
 
 let print_response print (resp, body) =
