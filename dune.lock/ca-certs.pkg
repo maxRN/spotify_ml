@@ -1,0 +1,17 @@
+(version 1.0.0)
+
+(build
+ (progn
+  (when
+   %{pkg-self:dev}
+   (run dune subst))
+  (run dune build -p %{pkg-self:name} -j %{jobs} @install)))
+
+(depends dune bos fpath ptime logs digestif mirage-crypto x509 ocaml ohex)
+
+(source
+ (fetch
+  (url
+   https://github.com/mirage/ca-certs/releases/download/v1.0.0/ca-certs-1.0.0.tbz)
+  (checksum
+   sha256=8690f2312346724799f2d8a1b684ec16b627b027d4164803a0e2b7e2462c0a72)))

@@ -10,7 +10,6 @@ homepage: "https://github.com/maxrn/spotify_ml"
 bug-reports: "https://github.com/maxrn/spotify_ml/issues"
 depends: [
   "dune" {>= "3.16"}
-  "ocamlformat" {with-dev-setup & = "0.26.2"}
   "serde" {= "0.0.2"}
   "serde_derive" {= "0.0.2"}
   "serde_json" {= "0.0.2"}

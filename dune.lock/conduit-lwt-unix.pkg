@@ -1,0 +1,28 @@
+(version 7.0.0)
+
+(build
+ (progn
+  (when
+   %{pkg-self:dev}
+   (run dune subst))
+  (run dune build -p %{pkg-self:name} -j %{jobs})))
+
+(depends
+ ocaml
+ dune
+ base-unix
+ logs
+ ppx_sexp_conv
+ conduit-lwt
+ lwt
+ uri
+ ipaddr
+ ipaddr-sexp
+ ca-certs)
+
+(source
+ (fetch
+  (url
+   https://github.com/mirage/ocaml-conduit/releases/download/v7.0.0/conduit-7.0.0.tbz)
+  (checksum
+   sha256=3e0ec284896a95d178d8d135792e7a46cb24f9cb0af0ea964d05cee1abcb1218)))

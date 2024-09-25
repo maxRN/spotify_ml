@@ -1,0 +1,17 @@
+(version 0.0.2)
+
+(build
+ (progn
+  (when
+   %{pkg-self:dev}
+   (run dune subst))
+  (run dune build -p %{pkg-self:name} -j %{jobs} @install)))
+
+(depends ocaml rio dune)
+
+(source
+ (fetch
+  (url
+   https://github.com/serde-ml/serde/releases/download/0.0.2/serde-0.0.2.tbz)
+  (checksum
+   sha256=0766b13f1e9421f98fab8efc5d43657229f3b3bc13ca4722086da634fe076ca4)))

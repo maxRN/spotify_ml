@@ -18,10 +18,6 @@
  (synopsis "Spotify API bindings")
  (description "Interact with the Spotify Web API via OCaml.")
  (depends
-  (ocamlformat
-   (and
-    :with-dev-setup
-    (= 0.26.2)))
   (serde
    (= 0.0.2))
   (serde_derive
