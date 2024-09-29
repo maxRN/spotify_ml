@@ -267,10 +267,6 @@ type query_response = {
 }
 [@@deriving deserialize]
 
-type apiError =
-  | ErrorClient of Client.requestError
-  | ErrorSerialization of Serde.error
-
 type query_item_type =
   | Album
   | Artist

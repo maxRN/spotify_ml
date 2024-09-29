@@ -25,8 +25,12 @@ type requestError =
   | ErrorRateLimit of httpError  (** The app has exceeded its rate limits.*)
   | ErrorUnknown of httpError  (** Unexpected error happened.*)
 
+type apiError =
+  | ErrorClient of requestError
+  | ErrorSerialization of Serde.error
+      (** This happens when the response returned by Spotify doesn't match the declared types.*)
+
 val make : client_id:string -> client_secret:string -> t
-val make_empty : t
 
 val redirect_uri :
   client:t -> scope:string -> redirect_uri:string -> state:string -> Uri.t
@@ -40,4 +44,7 @@ val login_as_user :
 val refresh_user :
   client:t -> old_user:User.t -> (User.t, Serde.error) result Lwt.t
 
-val get : user:User.t -> url:string -> (string, requestError) result Lwt.t
+val get : user:User.t -> url:string -> (string, requestError) Result.t Lwt.t
+
+val get_no_user : client:t -> url:string -> (string, apiError) Result.t Lwt.t
+(** This is used for endpoints that don't require a user. *)

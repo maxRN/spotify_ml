@@ -1,23 +1,19 @@
 open Base
 include Types
 
-type apiError =
-  | ErrorClient of Client.requestError
-  | ErrorSerialization of Serde.error
-
 let base_url = "https://api.spotify.com/v1"
 
 let deserialize x =
   Serde_json.of_string deserialize_track_response x
-  |> Result.map_error ~f:(fun e -> ErrorSerialization e)
+  |> Result.map_error ~f:(fun e -> Client.ErrorSerialization e)
 
 let user_top_tracks ~user =
   let url = base_url ^ "/me/top/tracks" in
   let%lwt resp = Client.get ~user ~url in
-  let resp = resp |> Result.map_error ~f:(fun e -> ErrorClient e) in
+  let resp = resp |> Result.map_error ~f:(fun e -> Client.ErrorClient e) in
   Result.bind resp ~f:deserialize |> Lwt.return
 
-let search ~item_types ~user ?market ?limit ?offset ?include_external query =
+let search ~item_types ~client ?market ?limit ?offset ?include_external query =
   let uri = Uri.of_string @@ base_url ^ "/search" in
 
   let uri =
@@ -47,11 +43,10 @@ let search ~item_types ~user ?market ?limit ?offset ?include_external query =
   let item_types = String.concat ~sep:"," item_types in
   let uri = Uri.add_query_param' uri ("type", item_types) in
 
-  let%lwt resp = Client.get ~user ~url:(Uri.to_string uri) in
-  let resp = Result.map_error ~f:(fun e -> ErrorClient e) resp in
+  let%lwt resp = Client.get_no_user ~client ~url:(Uri.to_string uri) in
   Lwt.return
   @@ Result.bind
        ~f:(fun e ->
          Serde_json.of_string deserialize_query_response e
-         |> Result.map_error ~f:(fun e -> ErrorSerialization e))
+         |> Result.map_error ~f:(fun e -> Client.ErrorSerialization e))
        resp

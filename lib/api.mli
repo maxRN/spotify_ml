@@ -260,24 +260,19 @@ type query_response = {
   audiobooks : audiobook_response;
 }
 
-type apiError =
-  | ErrorClient of Client.requestError
-  | ErrorSerialization of Serde.error
-      (** This happens when the response returned by Spotify doesn't match the declared types.*)
-
 val user_top_tracks :
-  user:Client.User.t -> (track_response, apiError) result Lwt.t
+  user:Client.User.t -> (track_response, Client.apiError) Result.t Lwt.t
 (** Returns the users' top tracks.*)
 
 val string_of_query_item_type : query_item_type -> string
 
 val search :
   item_types:query_item_type list ->
-  user:Client.User.t ->
+  client:Client.t ->
   ?market:string ->
   ?limit:string ->
   ?offset:string ->
   ?include_external:string ->
   string ->
-  (query_response, apiError) result Lwt.t
+  (query_response, Client.apiError) Result.t Lwt.t
 (** https://developer.spotify.com/documentation/web-api/reference/search *)
