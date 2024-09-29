@@ -1,5 +1,5 @@
 (library
- (name spotify_ml)
+ (name spotify)
  (public_name spotify_ml)
  (libraries cohttp-lwt-unix serde_json serde)
  (preprocess
