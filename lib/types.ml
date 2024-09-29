@@ -18,7 +18,7 @@ type simplifiedArtist = {
 type album = {
   album_type : string;
   total_tracks : int;
-  available_markets : string list;
+  (*available_markets : string list;*)
   external_urls : externalUrl;
   href : string;
   id : string;
@@ -56,7 +56,7 @@ type linked_from = { anything : string option } [@@deriving deserialize]
 type track = {
   album : album;
   artists : artist list;
-  available_markets : string list;
+  (*available_markets : string list;*)
   disc_number : int;
   duration_ms : int;
   explicit : bool;
@@ -108,7 +108,7 @@ type playlist = {
 type copyright = { text : string; type_ : string } [@@deriving deserialize]
 
 type show = {
-  available_markets : string list;
+  (*available_markets : string list;*)
   copyrights : copyright list;
   description : string;
   html_description : string;
@@ -158,7 +158,7 @@ type narrator = { name : string } [@@deriving deserialize]
 
 type audiobook = {
   authors : author;
-  available_markets : string list;
+  (*available_markets : string list;*)
   copyrights : copyright;
   description : string;
   html_description : string;
