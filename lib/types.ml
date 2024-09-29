@@ -1,23 +1,19 @@
-(** Api includes functions that map to the Spotify Web REST API.
-    See {{:https://developer.spotify.com/documentation/web-api}here} for an up
-    to date reference.
-
-    All functions will also automatically refresh the {!Client.User} object and return
-    an updated one alongside the normal API response.*)
-
 type image = { url : string; height : int option; width : int option }
-type externalUrl = { spotify : string }
-type followers = { href : string option; total : int }
-type restrictions = { reason : string }
+[@@deriving deserialize]
+
+type externalUrl = { spotify : string } [@@deriving deserialize]
+type followers = { href : string option; total : int } [@@deriving deserialize]
+type restrictions = { reason : string } [@@deriving deserialize]
 
 type simplifiedArtist = {
   external_urls : externalUrl;
   href : string;
   id : string;
   name : string;
-  item_type : string;
+  item_type : string; [@serde { rename = "type" }]
   uri : string;
 }
+[@@deriving deserialize]
 
 type album = {
   album_type : string;
@@ -31,10 +27,11 @@ type album = {
   release_date : string;
   release_date_precision : string;
   restrictions : restrictions option;
-  item_type : string;
+  item_type : string; [@serde { rename = "type" }]
   uri : string;
   artists : simplifiedArtist list;
 }
+[@@deriving deserialize]
 
 type artist = {
   external_urls : externalUrl;
@@ -45,12 +42,16 @@ type artist = {
   images : image list option;
   name : string;
   popularity : int option;
-  item_type : string;
+  item_type : string; [@serde { rename = "type" }]
   uri : string;
 }
+[@@deriving deserialize]
 
 type external_ids = { isrc : string; ean : string option; upc : string option }
-type linked_from = { anything : string option }
+[@@deriving deserialize]
+
+(* We don't know what this looks like *)
+type linked_from = { anything : string option } [@@deriving deserialize]
 
 type track = {
   album : album;
@@ -70,10 +71,11 @@ type track = {
   popularity : int;
   preview_url : string option;
   track_number : int;
-  track_type : string;
+  track_type : string; [@serde { rename = "type" }]
   uri : string;
   is_local : bool;
 }
+[@@deriving deserialize]
 
 type user = {
   external_urls : externalUrl;
@@ -84,6 +86,7 @@ type user = {
   uri : string;
   display_name : string option;
 }
+[@@deriving deserialize]
 
 type playlist = {
   collaborative : bool;
@@ -100,8 +103,9 @@ type playlist = {
   type_ : string;
   uri : string;
 }
+[@@deriving deserialize]
 
-type copyright = { text : string; type_ : string }
+type copyright = { text : string; type_ : string } [@@deriving deserialize]
 
 type show = {
   available_markets : string list;
@@ -122,8 +126,10 @@ type show = {
   uri : string;
   total_episodes : int;
 }
+[@@deriving deserialize]
 
 type resume_point = { fully_played : bool; resume_position_ms : int }
+[@@deriving deserialize]
 
 type episode = {
   audio_preview_url : string option;
@@ -145,9 +151,10 @@ type episode = {
   uri : string;
   restrictions : restrictions;
 }
+[@@deriving deserialize]
 
-type author = { name : string }
-type narrator = { name : string }
+type author = { name : string } [@@deriving deserialize]
+type narrator = { name : string } [@@deriving deserialize]
 
 type audiobook = {
   authors : author;
@@ -170,15 +177,7 @@ type audiobook = {
   uri : string;
   total_chapters : int;
 }
-
-type query_item_type =
-  | Album
-  | Artist
-  | Playlist
-  | Track
-  | Show
-  | Episode
-  | Audiobook
+[@@deriving deserialize]
 
 type album_response = {
   href : string;
@@ -189,6 +188,7 @@ type album_response = {
   total : int;
   items : album list;
 }
+[@@deriving deserialize]
 
 type artist_response = {
   href : string;
@@ -199,6 +199,7 @@ type artist_response = {
   total : int;
   items : artist list;
 }
+[@@deriving deserialize]
 
 type playlist_response = {
   href : string;
@@ -209,6 +210,7 @@ type playlist_response = {
   total : int;
   items : playlist list;
 }
+[@@deriving deserialize]
 
 type track_response = {
   href : string;
@@ -219,6 +221,7 @@ type track_response = {
   total : int;
   items : track list;
 }
+[@@deriving deserialize]
 
 type show_response = {
   href : string;
@@ -229,6 +232,7 @@ type show_response = {
   total : int;
   items : show list;
 }
+[@@deriving deserialize]
 
 type episode_response = {
   href : string;
@@ -239,6 +243,7 @@ type episode_response = {
   total : int;
   items : episode list;
 }
+[@@deriving deserialize]
 
 type audiobook_response = {
   href : string;
@@ -249,6 +254,7 @@ type audiobook_response = {
   total : int;
   items : audiobook list;
 }
+[@@deriving deserialize]
 
 type query_response = {
   albums : album_response;
@@ -259,25 +265,26 @@ type query_response = {
   episodes : episode_response;
   audiobooks : audiobook_response;
 }
+[@@deriving deserialize]
 
 type apiError =
   | ErrorClient of Client.requestError
   | ErrorSerialization of Serde.error
-      (** This happens when the response returned by Spotify doesn't match the declared types.*)
 
-val user_top_tracks :
-  user:Client.User.t -> (track_response, apiError) result Lwt.t
-(** Returns the users' top tracks.*)
+type query_item_type =
+  | Album
+  | Artist
+  | Playlist
+  | Track
+  | Show
+  | Episode
+  | Audiobook
 
-val string_of_query_item_type : query_item_type -> string
-
-val search :
-  item_types:query_item_type list ->
-  user:Client.User.t ->
-  ?market:string ->
-  ?limit:string ->
-  ?offset:string ->
-  ?include_external:string ->
-  string ->
-  (query_response, apiError) result Lwt.t
-(** https://developer.spotify.com/documentation/web-api/reference/search *)
+let string_of_query_item_type = function
+  | Album -> "album"
+  | Artist -> "artist"
+  | Playlist -> "playlist"
+  | Track -> "track"
+  | Show -> "show"
+  | Episode -> "episode"
+  | Audiobook -> "audiobook"

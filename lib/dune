@@ -1,7 +1,7 @@
 (library
  (name spotify)
  (public_name spotify_ml)
- (libraries cohttp-lwt-unix serde_json serde)
+ (libraries cohttp-lwt-unix serde_json serde base)
  (preprocess
   (pps serde_derive lwt_ppx)))
 

@@ -1,4 +1,4 @@
-(version 7.0.0)
+(version 7.1.0)
 
 (build
  (progn
@@ -12,6 +12,6 @@
 (source
  (fetch
   (url
-   https://github.com/mirage/ocaml-conduit/releases/download/v7.0.0/conduit-7.0.0.tbz)
+   https://github.com/mirage/ocaml-conduit/releases/download/v7.1.0/conduit-7.1.0.tbz)
   (checksum
-   sha256=3e0ec284896a95d178d8d135792e7a46cb24f9cb0af0ea964d05cee1abcb1218)))
+   sha256=58d2218a07e71706025de38ca0253233e970f35b4cacd37f706941b4cbea57f7)))
