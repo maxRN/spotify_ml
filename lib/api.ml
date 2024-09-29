@@ -47,6 +47,7 @@ let search ~item_types ~client ?market ?limit ?offset ?include_external query =
   Lwt.return
   @@ Result.bind
        ~f:(fun e ->
+         Stdlib.Printf.eprintf "got response body: %s\n%!" e;
          Serde_json.of_string deserialize_query_response e
          |> Result.map_error ~f:(fun e -> Client.ErrorSerialization e))
        resp

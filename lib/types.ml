@@ -275,6 +275,7 @@ type query_item_type =
   | Show
   | Episode
   | Audiobook
+[@@deriving deserialize]
 
 let string_of_query_item_type = function
   | Album -> "album"
