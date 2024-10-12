@@ -18,14 +18,15 @@
  (synopsis "Spotify API bindings")
  (description "Interact with the Spotify Web API via OCaml.")
  (depends
-  (serde
-   (= 0.0.2))
-  (serde_derive
-   (= 0.0.2))
-  (serde_json
-   (= 0.0.2))
+  serde
+  serde_derive
+  serde_json
   (lwt_ppx
    (= 2.1.0))
   (cohttp-lwt-unix
    (= 5.3.0)))
  (tags (spotify)))
+
+(pin (package (name serde_json)) (url "git+https://github.com/maxrn/serde"))
+(pin (package (name serde)) (url "git+https://github.com/maxrn/serde"))
+(pin (package (name serde_derive)) (url "git+https://github.com/maxrn/serde"))
