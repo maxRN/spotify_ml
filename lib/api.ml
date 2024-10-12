@@ -5,7 +5,7 @@ let base_url = "https://api.spotify.com/v1"
 
 let deserialize x =
   Serde_json.of_string deserialize_track_response x
-  |> Result.map_error ~f:(fun e -> Client.ErrorSerialization e)
+  |> Result.map_error ~f:(fun e -> Client.ErrorSerialization (x, e))
 
 let user_top_tracks ~user =
   let url = base_url ^ "/me/top/tracks" in
@@ -46,10 +46,11 @@ let search ~item_types ~client ?market ?limit ?offset ?include_external query =
   let%lwt resp = Client.get_no_user ~client ~url:(Uri.to_string uri) in
   Lwt.return
   @@ Result.bind
-       ~f:(fun e ->
+       ~f:(fun err_msg ->
          let oc = Out_channel.open_text "logs.txt" in
-         Stdlib.Printf.fprintf oc "got response body: %s\n%!" e;
+         Stdlib.Printf.fprintf oc "got response body: %s\n%!" err_msg;
          Out_channel.close oc;
-         Serde_json.of_string deserialize_query_response e
-         |> Result.map_error ~f:(fun e -> Client.ErrorSerialization e))
+         Serde_json.of_string deserialize_query_response err_msg
+         |> Result.map_error ~f:(fun e ->
+                Client.ErrorSerialization (err_msg, e)))
        resp

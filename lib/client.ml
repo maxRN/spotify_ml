@@ -80,7 +80,7 @@ type requestError =
 
 type apiError =
   | ErrorClient of requestError
-  | ErrorSerialization of Serde.error
+  | ErrorSerialization of (string * Serde.error)
       (** This happens when the response returned by Spotify doesn't match the declared types.*)
 
 type server_auth_response = {
@@ -230,7 +230,9 @@ let refresh_user ~client ~old_user =
            ~expires_in:user.expires_in)
   |> Lwt.return
 
-let login_client client : (server_auth_response, Serde.error) Result.t Lwt.t =
+let login_client client :
+    (server_auth_response, string * Serde.error) Result.t Lwt.t =
+  let open Base in
   let auth_token = Config.request_token client.config in
   let headers =
     Cohttp.Header.init () |> ph "Authorization" ("Basic " ^ auth_token)
@@ -241,10 +243,9 @@ let login_client client : (server_auth_response, Serde.error) Result.t Lwt.t =
     Cohttp_lwt_unix.Client.post_form ~headers ~params token_url
     >>= print_response false
   in
-  let maybe_server_auth =
-    Serde_json.of_string deserialize_server_auth_response resp
-  in
-  maybe_server_auth |> Lwt.return
+  Serde_json.of_string deserialize_server_auth_response resp
+  |> Result.map_error ~f:(fun e -> (resp, e))
+  |> Lwt.return
 
 let get_no_user_valid ~token ~url : (string, apiError) Result.t Lwt.t =
   let open Base in

@@ -27,7 +27,7 @@ type requestError =
 
 type apiError =
   | ErrorClient of requestError
-  | ErrorSerialization of Serde.error
+  | ErrorSerialization of (string * Serde.error)
       (** This happens when the response returned by Spotify doesn't match the declared types.*)
 
 val make : client_id:string -> client_secret:string -> t
