@@ -251,13 +251,13 @@ type audiobook_response = {
 }
 
 type query_response = {
-  albums : album_response;
-  artists : artist_response;
-  playlists : playlist_response;
-  tracks : track_response;
-  shows : show_response;
-  episodes : episode_response;
-  audiobooks : audiobook_response;
+  albums : album_response option;
+  artists : artist_response option;
+  playlists : playlist_response option;
+  tracks : track_response option;
+  shows : show_response option;
+  episodes : episode_response option;
+  audiobooks : audiobook_response option;
 }
 
 val user_top_tracks :
